@@ -3,3 +3,12 @@ https://colab.research.google.com/drive/1VdPd3ejA8hWiLlZSgx7L0rAAAqyROH3t?usp=sh
 https://husteduvn-my.sharepoint.com/personal/sang_dinhviet_hust_edu_vn/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fsang%5Fdinhviet%5Fhust%5Fedu%5Fvn%2FDocuments%2F%21DATA%2FDeepSrayPackage%2FPACIFIC%2D20210309T043014Z%2D001%2FPACIFIC%2Fiso%5Fpng%20%281%29%2FDeepSpray%20Data&ga=1
 
 https://github.com/sangdv/deepspray?fbclid=IwAR0EneobsbjhZyySTXvwpyn7MURpalCPb2YLpK8l1ow_bLXJwhFjkoYAJ9Y
+
+
+sinh dữ liệu huấn luyện do có rất nhiều giọt, ko thể đánh hết được
+=> làm sao để tạo ảnh càng giống thật càng tốt. 
+hiện tại thì việc tạo ảnh này đang rất là thô sơ
+
+xử lý ảnh như thế nào? Xử lý ảnh để tạo nhãn (weakly supervised, semi-supervised)
+
+Chiều T2, T5
