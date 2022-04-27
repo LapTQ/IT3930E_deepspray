@@ -12,3 +12,10 @@ hiện tại thì việc tạo ảnh này đang rất là thô sơ
 xử lý ảnh như thế nào? Xử lý ảnh để tạo nhãn (weakly supervised, semi-supervised)
 
 Chiều T2, T5
+
+contour:
++ detect được giọt rất nhỏ
+- không xử lý được overlap
+DNN:
++ xử lý được overlap
+- không detect đc giọt rất nhỏ
