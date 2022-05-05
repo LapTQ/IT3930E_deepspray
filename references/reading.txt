@@ -4,6 +4,39 @@ https://husteduvn-my.sharepoint.com/personal/sang_dinhviet_hust_edu_vn/_layouts/
 
 https://github.com/sangdv/deepspray?fbclid=IwAR0EneobsbjhZyySTXvwpyn7MURpalCPb2YLpK8l1ow_bLXJwhFjkoYAJ9Y
 
+## TASK: sinh dữ liệu huấn luyện sao cho giống thật
+
+### Bước 1: Tách ra thành 2 phần các giọt bắn riêng, dòng chính riêng.
+
+### Cách 1: Gán nhãn thủ công cho 1 số giọt.
+
+
+### Cách 2: Dùng kỹ thuật xử lý ảnh để tự động detect và gán nhãn các bouding boxes.
+
+* dùng canny
+* connected component
+
+
+### Bước 2: Dán các giọt bắn (đã có gán nhãn) vào dòng chính.
+Các giọt bắn có thể:
+* được xoay ở vị trí cố định
+* thay đổi kích thước
+* đổi vị trí cho nhau
+* xê dịch trong 1 vùng nhất định
+* tương tự, với dòng chính của ảnh khác có cùng thông số hình học với dòng chính
+
+Chú ý:
+* kích thước giọt bắn khi resize phải hợp lí, tốt nhất là không được thay đổi phân bố của diện tích
+* loại bỏ background xuang quanh chỉ giữ nguyên phần giọt của mỗi box thôi
+* khi cắt các giọt bị trùng với dòng chính thì sẽ để lại khoảng màu trắng ở dòng chính, phải làm sao?
+* khi dán các giọt vào ảnh mới, thì phải dán ở 1 vị trí hợp lý (không nói trường hợp dán vào vị trí cũ của 1 giọt khác), chắc phải tìm hiểu phân bố vị trí trong không gian ảnh
+
+
+
+
+
+
+
 
 sinh dữ liệu huấn luyện do có rất nhiều giọt, ko thể đánh hết được
 => làm sao để tạo ảnh càng giống thật càng tốt. 
@@ -19,3 +52,13 @@ contour:
 DNN:
 + xử lý được overlap
 - không detect đc giọt rất nhỏ
+
+
+Generative models:
+https://www.tensorflow.org/tutorials/generative/cvae
+https://www.tensorflow.org/tutorials/generative/dcgan
+https://keras.io/examples/generative/vae/
+https://www.kaggle.com/code/theblackmamba31/generating-fake-faces-using-gan/notebook
+https://blog.paperspace.com/face-generation-with-dcgans/
+https://towardsdatascience.com/generating-with-style-the-mechanics-behind-nvidias-highly-realistic-gan-images-b6937237e3c6
+http://myreadersspace.com/2020/08/24/stylegan-2-a-better-version-of-stylegan/
