@@ -28,10 +28,18 @@ https://docs.opencv.org/4.x/d5/d45/tutorial_py_contours_more_functions.html
   1. Giữ được giọt li ti:
      * Dùng global threshold: những giọt gần nhau có pixel ở biên nhạt hơn, nếu không threshold để loại bỏ có thể làm 2 giọt bị dính vào nhau.
   2. Nhận biết được overlap, phân biệt được ligament vs drop
-     * dùng luật về tỉ lệ và diện tích: không tốt, không phân biệt được nhiều trường hợp contour bị dính vào nhau
-     * match shape (đang dùng HuMoment) với vài luật (chưa phải match nội dung như SIFT): tạm được
+     * dùng luật về tỉ lệ và diện tích: 
+       * [-] nhiều trường hợp các giọt bị dính vào nhau tạo nên tỉ lệ < 3 vẫn được xem là drop. Khả năng là không dùng được.
+     * match shape (đang dùng HuMoment) với vài luật (chưa phải match nội dung như SIFT): 
+       * [+] phân biệt được drop vs (ligament, dính nhau) khá tốt. Hiện tại phải dùng 2 template (cho giọt tròn và dài) của drop để lọc. Sau khi tách được drop thì lọc bỏ để xử lý dấu [-] sau:
+       * [-] chưa biết cách phân biệt ligament vs dính nhau.
+         * => [- chưa tìm thấy hàm] thử dùng luật về độ căng của contour
+       * [-] chưa tách được contour của những giọt hay ligament bị dính vào dòng chính để mà phân tích thêm.
+         * => thử dùng erosion, dilation.
+       * [-] không thể áp dụng thresholding này để nhận biết được các đối tượng nằm đè lên dòng chính.
      * SIFT, SURF, KAZE, AKAZE, ORB, and BRISK để lọc ra các trường hợp bị overlap rồi xử lí sau
-     * thử chỉnh độ căng của contour
+     
+     * Chú ý: sample 1 phần các contour đã detect được để gán nhãn (giảm số lượng gán sai) và chọn được cái nào thì xóa khỏi ảnh gốc cái đó để xử lý phần còn lại.
       
  
 
