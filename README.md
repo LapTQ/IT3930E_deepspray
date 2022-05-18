@@ -1,5 +1,7 @@
 # TASK: sinh dữ liệu huấn luyện sao cho giống thật
 
+['bag', 'lobe', 'Detached ligament', 'drop', 'Attached ligament']
+
 ## Bước 1: Tách ra thành 2 phần: giọt bắn & dòng chính.
 
 ### Cách 1: Gán nhãn thủ công cho 1 số giọt.
@@ -22,24 +24,30 @@ https://docs.opencv.org/4.x/dd/d49/tutorial_py_contour_features.html
 https://docs.opencv.org/4.x/d1/d32/tutorial_py_contour_properties.html
 https://docs.opencv.org/4.x/d5/d45/tutorial_py_contours_more_functions.html
 
-* Chỉnh sửa anh gốc:
-
-* Đưa về ảnh nhị phân
-  1. Giữ được giọt li ti:
-     * Dùng global threshold: những giọt gần nhau có pixel ở biên nhạt hơn, nếu không threshold để loại bỏ có thể làm 2 giọt bị dính vào nhau.
+* GLOBAL THRESHOLDING:
+  1. Giữ được giọt li ti: 
+     * [+] những giọt gần nhau có pixel ở biên nhạt hơn, nên việc thresholding có thể loại bỏ 1 phần sự dính nhau này.
+     * [-] nếu threshold value nhỏ hơn thì có nhiều giọt bị to ra, lớn hơn thì mất
+     * [-] nếu pixel ở biên vẫn thoát được ngưỡng sẽ thành trắng hết => 2 vật bị nối với nhau (dù là 1 pixel góc) thì cũng được xem là 1 contour
+     * //TODO: cải thiện thuật toán thresholding hoặc cải thiện chất lượng ảnh (HE chẳng hạn) để không bỏ sót những giọt li ti và loại bỏ nhiều hơn phần biên mờ.
+     * //TODO: cải thiện thuật toán countour: trường hợp 2 giọt tròn bị dính hoặc overlap thì tự tách contour thành các phương trình đường tròn. 
   2. Nhận biết được overlap, phân biệt được ligament vs drop
      * dùng luật về tỉ lệ và diện tích: 
        * [-] nhiều trường hợp các giọt bị dính vào nhau tạo nên tỉ lệ < 3 vẫn được xem là drop. Khả năng là không dùng được.
      * match shape (đang dùng HuMoment) với vài luật (chưa phải match nội dung như SIFT): 
        * [+] phân biệt được drop vs (ligament, dính nhau) khá tốt. Hiện tại phải dùng 2 template (cho giọt tròn và dài) của drop để lọc. Sau khi tách được drop thì lọc bỏ để xử lý dấu [-] sau:
        * [-] chưa biết cách phân biệt ligament vs dính nhau.
-         * => [- chưa tìm thấy hàm] thử dùng luật về độ căng của contour
+         * //TODO: kết hợp nhiều tập luật cho các template. Thử dùng mô hình xác suất xem sao.
+         * => thử dùng erosion, dilation để lấy mask của vật to, rồi subtract ra vật nhỏ (CHỊU, KHÔNG CÁCH NÀO BIẾT DIỂM DỪNG) 
+         * => [- chưa tìm thấy hàm] thử dùng luật về độ căng của contour (CHỊU, CŨNG NHƯ TRÊN)
        * [-] chưa tách được contour của những giọt hay ligament bị dính vào dòng chính để mà phân tích thêm.
-         * => thử dùng erosion, dilation.
+         * => thử dùng erosion, dilation. (CHỊU, CÓ VẺ THEO CẢM QUAN THÌ CŨNG KHÔNG BIẾT ĐIỂM DỪNG)
        * [-] không thể áp dụng thresholding này để nhận biết được các đối tượng nằm đè lên dòng chính.
-     * SIFT, SURF, KAZE, AKAZE, ORB, and BRISK để lọc ra các trường hợp bị overlap rồi xử lí sau
+  * => CHỐT LẠI: theo hướng THRESHOLDING này thỉ chỉ có thể tận dụng ở bước THRESHOLD -> HU MOMENT để lọc ra giọt li ti và các drop nằm tách biệt hoàn toàn. 
+* Kế thừa kết quả của Global thresholding: Cải thiện chất lượng ảnh gốc rồi dùng contour trên ảnh gốc, hoặc trên ảnh edge
+* Kế thừa kết quả của GLobal thresholding: Cải thiện chất lượng ảnh gốc rồi dùng SIFT, SURF, KAZE, AKAZE, ORB, and BRISK.
      
-     * Chú ý: sample 1 phần các contour đã detect được để gán nhãn (giảm số lượng gán sai) và chọn được cái nào thì xóa khỏi ảnh gốc cái đó để xử lý phần còn lại.
+Chú ý: sample 1 phần các contour đã detect được để gán nhãn (giảm số lượng gán sai) và chọn được cái nào thì xóa khỏi ảnh gốc cái đó để xử lý phần còn lại.
       
  
 
