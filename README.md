@@ -37,14 +37,14 @@ https://docs.opencv.org/4.x/d5/d45/tutorial_py_contours_more_functions.html
      * match shape (đang dùng HuMoment) với vài luật (chưa phải match nội dung như SIFT): 
        * [+] phân biệt được drop vs (ligament, dính nhau) khá tốt. Hiện tại phải dùng 2 template (cho giọt tròn và dài) của drop để lọc. Sau khi tách được drop thì lọc bỏ để xử lý dấu [-] sau:
        * [-] chưa biết cách phân biệt ligament vs dính nhau.
-         * **//TODO**: kết hợp nhiều tập luật cho các template. Thử dùng mô hình xác suất xem sao.
+         * **//TODO**: kết hợp nhiều tập luật cho các template (thử dùng mô hình xác suất xem sao), và cải thiện chất kuownjg thresholding để giọt tròn được tròn hơn
          * => thử dùng erosion, dilation để lấy mask của vật to, rồi subtract ra vật nhỏ **(CHỊU, KHÔNG CÁCH NÀO BIẾT DIỂM DỪNG)** 
          * => [- chưa tìm thấy hàm] thử dùng luật về độ căng của contour **(CHỊU, CŨNG NHƯ TRÊN)**
        * [-] chưa tách được contour của những giọt hay ligament bị dính vào dòng chính để mà phân tích thêm.
          * => thử dùng erosion, dilation. **(CHỊU, CÓ VẺ THEO CẢM QUAN THÌ CŨNG KHÔNG BIẾT ĐIỂM DỪNG)**
        * [-] không thể áp dụng thresholding này để nhận biết được các đối tượng nằm đè lên dòng chính.
-  * => CHỐT LẠI: theo hướng THRESHOLDING này thỉ chỉ có thể tận dụng ở bước THRESHOLD -> HU MOMENT để lọc ra giọt li ti và các drop nằm tách biệt hoàn toàn. 
-* Kế thừa kết quả của Global thresholding: Cải thiện chất lượng ảnh gốc rồi dùng contour trên ảnh gốc, hoặc trên ảnh edge (HIỆN TẠI chưa thể dùng được Hough, edge cũng rối quá không lấy được contour. Chắc do chưa biết dùng =_=)
+  * => **CHỐT LẠI**: theo hướng THRESHOLDING này thỉ chỉ có thể tận dụng ở bước THRESHOLD -> HU MOMENT để lọc ra giọt li ti và các drop nằm tách biệt hoàn toàn. Phần còn lại là: Dòng chính và những thứ bị dính vào nó, ligament, các giọt dính nhau hoặc đè nhau.
+* Kế thừa kết quả của Global thresholding: Cải thiện chất lượng ảnh gốc rồi dùng contour trên ảnh gốc, hoặc trên ảnh edge (HIỆN TẠI chưa thể dùng được Hough, edge cũng rối quá không lấy được contour. Chắc do chưa biết dùng =_=. HOUGH phụ thuộc hoàn toàn vào Canny, nên có thể phải code lại Canny.)
 * Kế thừa kết quả của GLobal thresholding: Cải thiện chất lượng ảnh gốc rồi dùng SIFT, SURF, KAZE, AKAZE, ORB, and BRISK. (Ảnh toàn màu xanh thế này thì...)
 
 Chắc là phải theo cái hướng này:
@@ -65,16 +65,6 @@ Chú ý: sample 1 phần các contour đã detect được để gán nhãn (gi�
      
   2. Nhận biết được overlap (Tương tự như trên)
       
- 
-contour phụ thuộc vào xử lí phía trước.
-canny có thể làm thiếu vài pixel = > contour không kín
-canny có thể loại được nhiễu
-
-
-
-   
-
-##### 2.2.2 Connected component
 
 
 ## Bước 2: Dán các giọt bắn (đã có gán nhãn) vào dòng chính.
@@ -94,45 +84,40 @@ Chú ý:
 
 
 
-
-
-Segmenting binary object:
-- boundary detection
-https://learnopencv.com/edge-detection-using-opencv/
-https://pyimagesearch.com/2019/03/04/holistically-nested-edge-detection-with-opencv-and-deep-learning/
-
-- connected component
-- SIFT
-
-- hỗ trợ bởi
-+ xử lí pixel, filter, fft,
-
-+ dilate hoặc erose
-
-
-
-
-contour:
-+ detect được giọt rất nhỏ
-- không xử lý được overlap
-DNN:
-+ xử lý được overlap
-- không detect đc giọt rất nhỏ
-
-
-Generative models:
-
-https://www.tensorflow.org/tutorials/generative/cvae
-https://www.tensorflow.org/tutorials/generative/dcgan
-https://keras.io/examples/generative/vae/
-https://www.kaggle.com/code/theblackmamba31/generating-fake-faces-using-gan/notebook
-https://blog.paperspace.com/face-generation-with-dcgans/
-https://towardsdatascience.com/generating-with-style-the-mechanics-behind-nvidias-highly-realistic-gan-images-b6937237e3c6
-http://myreadersspace.com/2020/08/24/stylegan-2-a-better-version-of-stylegan/
-
 ## References
 
 https://colab.research.google.com/drive/1VdPd3ejA8hWiLlZSgx7L0rAAAqyROH3t?usp=sharing&fbclid=IwAR10UUbo3_ykmJVx7_5ReJ3kgNhaNgS4i_n2GA7AFEfUsaeSB43pg4UpkCg
 https://husteduvn-my.sharepoint.com/personal/sang_dinhviet_hust_edu_vn/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fsang%5Fdinhviet%5Fhust%5Fedu%5Fvn%2FDocuments%2F%21DATA%2FDeepSrayPackage%2FPACIFIC%2D20210309T043014Z%2D001%2FPACIFIC%2Fiso%5Fpng%20%281%29%2FDeepSpray%20Data&ga=1
 https://github.com/sangdv/deepspray
 https://colab.research.google.com/drive/1UDU6gRinL8c6hRSuLG1mNzeNdTpRsOaa?usp=sharing&fbclid=IwAR0CfuttFANX3rdQJkUQknpuqQSYCHNobqNxudQbnWs9wTr4MT04eHGL_6I
+
+
+https://www.elveflow.com/microfluidic-reviews/droplet-digital-microfluidics/droplet-detection-measurement-microfluidic-channels/
+các thuật toán tracking có thể giúp ích gì không? Biết đâu có thể track được giọt di chuyển phía sau nhau
+nếu dựng lại backbone để yolo detect vật nhỏ được không (phải hiểu nguyên lý của mạng CNN). Tại sao không thiết kế backbone theo dạng Unet? Liệu có phải chỉ vì vấn đề chi phí tính toán?
+
+ |- drop
+      |- liti (CV)
+      |    |- tách biệt (-> dùng luật về diện tích có thể bắt được hết)
+      |    |- dính nhau hoặc dính vào vật khác (-> 0.01%, quá bé nên không thể phân biệt được với bóng mờ ở viền)
+      |    |- nằm đè lên vật khác (rất khó xác định do chỉ là một chấm nhỏ màu hơi đậm hơn): [A new algorithm for detecting and correcting bad pixels in infrared images](http://www.scielo.org.co/scielo.php?pid=S0120-56092010000200020&script=sci_arttext&tlng=en) 
+      |- bé (CV)
+      |    |- tách biệt (-> dùng Humoment sẽ bắt được gần hết, không thể dùng luật tỉ lệ box vì nó không thể phân biệt được với trường hợp nhiều giọt bị dính nhau sinh ra box tỉ lệ vuông)
+      |    |- dính nhau hoặc dính vào vật khác
+      |    |- overlap với nhau hoặc với vật khác (contour có thể nhầm với ligament)
+      |    |- nằm đè lên vật khác (khó xác định do đường biên mờ)
+      |- trung bình (DL, sinh dữ liệu bằng CV)      -> CV detect một vài giọt trung bình thật, hoặc tăng kích thước các giot bé và deform?
+      |    |- ... (giống drop bé)
+      |- to (DL, sinh dữ liệu từ CV)                -> CV detect một vài giọt to thật, hoặc tăng kích thước các giọt bé (có thể kết hợp các giọt bé + xóa biên) và deform?
+      |    |- ... (giống drop trung bình)
+ |- deattached liagement (contour có thể nhầm với các drop dính nhau) (DL, sinh dữ liệu từ CV) -> CV detect một vài ligament thật, hoặc thăng kích thước của drop (có thể kết hợp nhiều giọt và làm mượt) và deform?
+      |- tách biệt
+      |- dính vào các vật khác
+      |- nằm đè lên dòng chính
+      |- bị vật khác đè lên một/nhiều phần hoặc overlap (bị mất đường biên nếu bị đè lên 1 phần)
+ |- attached ligament (DL, sinh dữ liệu từ CV)     -> CV không thể detect thật, nên có thể biến đổi deattached ligament
+      |- khác với deattached ligament ở chỗ: 1 phần đầu không có biên mà sẽ hòa vào dòng chính
+      |- gần như luôn bị vật khác đè lên tạo ra biên gây nhầm lẫn với deattached ligament
+ |- bag
+ |- lobe
+
