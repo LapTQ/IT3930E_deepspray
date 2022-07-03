@@ -1,6 +1,6 @@
 # TASK: sinh dữ liệu huấn luyện
 
-['bag', 'lobe', 'Detached ligament', 'drop', 'Attached ligament']
+`['bag', 'lobe', 'Detached ligament', 'drop', 'Attached ligament']`
 
 Hiện tại dữ liệu sinh ra cho 3 loại là `Detached ligament`, `drop`, `Attached ligament`.
 
