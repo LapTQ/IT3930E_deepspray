@@ -5,6 +5,7 @@ from pathlib import Path
 import cv2
 import os
 
+
 def process_txt(path):
     """
     Read .txt annotation file and convert to Python nested list.
@@ -18,6 +19,7 @@ def process_txt(path):
     boxes = [box.split() for box in boxes]
     boxes = [[eval(i) for i in box] for box in boxes]
     return boxes
+
 
 def yolo_to_coco(image_size, boxes):
     """
@@ -35,6 +37,25 @@ def yolo_to_coco(image_size, boxes):
     new_boxes[:, 2] = (boxes[:, 2] * W)
     new_boxes[:, 3] = (boxes[:, 3] * H)
     return new_boxes
+    
+    
+def coco_to_yolo(image_size, boxes):
+    """
+    Convert bounding box from COCO format to YOLO format.
+    :param image_size: (height, width, ...)
+    :param boxes: numpy array of shape (N, M>=4) in YOLO format [x, y, w, h, ...] in actual image size.
+    :return: numpy array of shape (N, M) in COCO format [x, y, w, h, ...] normalized.
+    """
+    if not isinstance(boxes, np.ndarray):
+        boxes = np.array(boxes)
+    H, W = image_size[:2]
+    new_boxes = np.copy(boxes).astype(np.float32)
+    new_boxes[:, 0] = (boxes[:, 0] / W)
+    new_boxes[:, 1] = (boxes[:, 1] / H)
+    new_boxes[:, 2] = (boxes[:, 2] / W)
+    new_boxes[:, 3] = (boxes[:, 3] / H)
+    return new_boxes
+    
 
 def xywh_to_xyxy(boxes):
     """
@@ -138,6 +159,7 @@ def wipe(img, boxes):
         img[y1:y2, x1:x2] = 255
     return img
 
+
 def get_drops(img, boxes):
     # tạm thời cắt lấy các boxes hình chữ nhật theo trục, sau này chỉnh lại cho các dạng khác
     drops = []
@@ -145,6 +167,7 @@ def get_drops(img, boxes):
         x1, y1, x2, y2 = box[:4]
         drops.append(img[y1:y2, x1:x2])
     return drops
+
 
 def augment(src_img, src_boxes, des_img, des_boxes):
     # tạm thời des_boxes = None, des_img là ảnh trắng.
