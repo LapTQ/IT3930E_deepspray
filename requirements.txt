@@ -1,0 +1,6 @@
+
+
+albumentations~=1.2.0
+opencv-python~=4.5.4.60
+opencv-contrib-python~=4.5.4.60
+opencv-python-headless~=4.5.4.60

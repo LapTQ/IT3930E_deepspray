@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
-from pathlib import Path
 import cv2
 import os
+import albumentations as A
+
 
 
 def process_txt(path):
@@ -199,3 +200,133 @@ def augment(src_img, src_boxes, des_img, des_boxes):
         des_img[dy1:dy2, dx1:dx2] = src_img[sy1:sy2, sx1:sx2]
 
     return des_img, des_boxes
+
+
+def background_from_color(H, W, color, offset=0):
+    background = np.tile(color, H * W).reshape(H, W, -1).astype('uint8')
+    background = cv2.cvtColor(background, cv2.COLOR_BGR2HSV)
+    background[:, :, 2] = background[:, :, 2] + offset
+    background = cv2.cvtColor(background, cv2.COLOR_HSV2BGR)
+    color = background[0, 0, :]
+
+    return background, color
+
+
+def make_copy(*args):
+    return [item.copy() for item in args]
+
+
+def transform(image, mask):
+    image, mask = make_copy(image, mask)
+    H, W = image.shape[:2]
+    image[mask == 0] = 0
+
+    # cắt và xoay thẳng
+    rect = cv2.minAreaRect(np.roll(np.where(mask == 255), 1, axis=0).transpose().reshape(-1, 2))
+    (x, y), (w, h), alpha = rect
+    if w < h:
+        w, h = int(w), int(h)
+        coord = np.array([[0, 0],
+                          [0, h],
+                          [w, h],
+                          [w, 0]], dtype='float32')
+    else:
+        w, h = int(h), int(w)
+        coord = np.array([[w, 0],
+                          [0, 0],
+                          [0, h],
+                          [w, h]], dtype='float32')
+
+    M = cv2.getPerspectiveTransform(cv2.boxPoints(rect), coord)
+    image = cv2.warpPerspective(image, M, (w, h))
+
+    # image = image[:-h//6]
+
+    stretch = np.random.choice(range(5, 11))
+    mag = np.random.choice([1.2, 1.4, 1.6])
+    w, h = int(mag * w), int(mag * max(stretch * w, h))  # kéo dài ảnh tỉ lệ tối thiểu
+
+    transformed = A.Compose([
+        A.Resize(h, w, interpolation=cv2.INTER_CUBIC),
+        A.Affine(scale=1.0, translate_percent=0, rotate=(-45, -145), shear=0, fit_output=True, p=1),
+        A.PiecewiseAffine(p=1.0, nb_rows=5, nb_cols=5, mode='reflect'),
+    ])(image=image)
+
+    image = transformed['image']
+
+    mask = (cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) > 40).astype('uint8') * 255
+
+    return {'image': image, 'mask': mask}
+
+
+def paste(src, des, src_mask, bottom_right):
+    src, des, src_mask = make_copy(src, des, src_mask)
+
+    if not isinstance(bottom_right, np.ndarray):
+        bottom_right = np.array(bottom_right).reshape(1, 2)
+
+    loc = np.roll(np.where(src_mask == 255), 1, axis=0).transpose().reshape(-1, 2)
+    idx = np.argmax(loc[:, 0])
+
+    new_loc = np.clip(loc - loc[idx] + bottom_right, 0, (des.shape[1] - 1, des.shape[0] - 1)).transpose()
+    loc = loc.transpose()
+
+    new_src = np.full_like(des, 255)
+    new_src_mask = np.zeros(des.shape[:2], dtype='uint8')
+
+    new_src[(new_loc[1], new_loc[0])] = src[(loc[1], loc[0])]
+    new_src_mask[(new_loc[1], new_loc[0])] = 255
+
+    des[new_src_mask == 255] = new_src[new_src_mask == 255]
+
+    return des, new_loc.transpose()
+
+
+def paste_seamless(src, des, src_mask, des_mask, bottom_right):
+    src, des, src_mask, des_mask = make_copy(src, des, src_mask, des_mask)
+
+    src[:, -src.shape[1] // 12:] = 0
+    src_mask[:, -src.shape[1] // 12:] = 0
+
+    if not isinstance(bottom_right, np.ndarray):
+        bottom_right = np.array(bottom_right).reshape(1, 2)
+
+    loc = np.roll(np.where(src_mask == 255), 1, axis=0).transpose().reshape(-1, 2)
+    idx = np.argmax(loc[:, 0])
+
+    new_loc = np.clip(loc - loc[idx] + bottom_right, 0, (des.shape[1] - 1, des.shape[0] - 1)).transpose()
+    loc = loc.transpose()
+
+    color = np.median(src[cv2.erode(src_mask, kernel=np.array([[0, 1, 1], [0, 1, 1], [0, 1, 1]], dtype='uint8'),
+                                    iterations=3) == 255], axis=0)  # đang cấn ở đoạn này des[(new_loc[1], new_loc[0])]
+    new_src, _ = background_from_color(des.shape[0], des.shape[1], color)
+    # new_src = np.full_like(des, 255)
+    new_src_mask = np.zeros_like(des_mask)
+
+    new_src[(new_loc[1], new_loc[0])] = src[(loc[1], loc[0])]
+    new_src_mask[(new_loc[1], new_loc[0])] = 255
+
+    overlap_mask = cv2.bitwise_and(new_src_mask, des_mask)
+    nonoverlap_mask = cv2.bitwise_xor(overlap_mask, new_src_mask)
+
+    color = np.median(des[des_mask == 255], axis=0).astype('uint8')  # đang cấn ở đoạn này des_mask
+    des[des_mask == 0] = color
+
+    des_mask[nonoverlap_mask == 255] = 255
+
+    new_src_mask = cv2.dilate(new_src_mask, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)  # critical
+
+    rect = cv2.boundingRect(new_src_mask)
+
+    des = cv2.seamlessClone(new_src, des, new_src_mask, (rect[0] + rect[2] // 2, rect[1] + rect[3] // 2),
+                            cv2.NORMAL_CLONE)
+
+    des[des_mask == 0] = 255
+
+    return des, des_mask, new_loc.transpose()
+
+
+def make_dir(*args):
+    path = os.path.join(*args)
+    os.makedirs(path, exist_ok=True)
+    return path
