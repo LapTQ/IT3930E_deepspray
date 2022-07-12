@@ -13,8 +13,8 @@ def parse_opt():
 
     ap = argparse.ArgumentParser()
 
-    ap.add_argument('--train_num', type=int, default=1000)
-    ap.add_argument('--valid_num', type=int, default=100)
+    ap.add_argument('--train_num', type=int, default=10)
+    ap.add_argument('--valid_num', type=int, default=2)
     ap.add_argument('--base_img', type=str, default=os.path.join('data', 'unlabeled', 'f_01324.png'))
     ap.add_argument('--labeled', type=str, default=os.path.join('data', 'labeled'))
 
@@ -25,10 +25,10 @@ def parse_opt():
 
 def main(opt):
 
-    train_img_dir = make_dir('train', 'images')
-    train_lbl_dir = make_dir('train', 'labels')
-    valid_img_dir = make_dir('valid', 'images')
-    valid_lbl_dir = make_dir('valid', 'labels')
+    train_img_dir = make_dir('dataset', 'images', 'train')
+    train_lbl_dir = make_dir('dataset', 'labels', 'train')
+    valid_img_dir = make_dir('dataset', 'images', 'val')
+    valid_lbl_dir = make_dir('dataset', 'labels', 'val')
 
     # ####################### LỌC LẤY GIỌT BÉ (notebook) #########################
     # Hướng 1: CLAHE trên toàn ảnh => Tệ
