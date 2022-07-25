@@ -185,7 +185,7 @@ def main(opt):
             syn_boxes = []
 
             # lấy các vị trí để dán attached ligament
-            n_in = 10
+            n_in = 5
             n_out = 10
 
             al_loc = np.where(cv2.erode(main_mask, kernel=kernel, iterations=15) == 255)
@@ -212,11 +212,11 @@ def main(opt):
 
             # dán giọt
             # chưa áp dụng các kiểu xoay, zoom, làm méo ligament
-            n = 200
+            n = 150
 
             rand_idx = np.random.choice([i for i in range(len(class_name)) if class_name[i] != 'small drop'], n)
 
-            n_in = int(0.5 * n)
+            n_in = int(0.35 * n)
             n_out = n - n_in
             rand_in_idx = np.random.choice([i for i in range(main_loc[0].shape[0]) if main_loc[1][i] < 1000], n_in)
             rand_out_idx = np.random.choice([i for i in range(len(centers))], n_out)
